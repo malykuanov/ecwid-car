@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Buggy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type='text/javascript' src='https://projects.davidlynch.org/maphilight/jquery.maphilight.js'></script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+	      $('.buggy').maphilight({
+	      	fillColor: '30F907',
+	      	fillOpacity: 0.4,
+	      	strokeColor: 'FFFF00',
+	      	strokeWidth: 3
+	      });
+      });
+    </script>
+
+    <style type="text/css">
+    	html, body {margin: 0; padding: 0;}
+      area {cursor: pointer;}
+      #result {width: 1024px; margin-top: 50px; text-align: center; 
+      		     font-family: Helvetica, sans-serif; font-size: 24px;}
+    </style>
+  </head>
+  <body onload="apiLoaded()">
+    <div class="container">
+    	<div class="row text-center mt-3">
+    		<p style="margin-bottom: 0;">Кликните по компоненту автомобиля, для добавления товара в корзину</p>
+    		<p><small><em>При клике по любому колесу автомобиля - добавляется весь комплект!</em></small></p>
+    	</div>
+    	<div class="row">
+	      <div id="content" class="col">
+	        <img class='buggy' src="https://i.ibb.co/S6QPkj9/buggy.png" usemap="#image-map">
+	        <map name="image-map" id='map-tag'>
+	          <area class="wheels" title="Колеса" data-productID="437682777" coords="188,426,78" shape="circle">
+	          <area class="wheels" title="Колеса" data-productID="437682777" coords="830,425,77" shape="circle">
+	          <area class="headlight" title="Фары" data-productID="437682782" coords="557,72,561,88,567,109,521,118,479,122,470,112,469,102,467,92,472,85" shape="poly">
+	          <area class="steeringWheel" title="Руль" data-productID="442641817" coords="250,366,283,353,328,337,385,316,420,303,470,284,464,268,456,247,464,242,469,252,476,270,483,290,496,328,489,331,480,314,475,300,473,293,439,303,359,333,303,353,256,370,250,366" shape="poly">
+	          <area class="engine" title="Двигатель" data-productID="437682773" coords="814,309,772,309,769,317,768,330,766,342,756,344,758,332,756,317,738,310,705,310,690,320,687,333,690,347,692,360,689,375,687,388,690,403,695,413,748,413,762,377,782,356,813,343" shape="poly">
+	          <area class="seat" title="Сиденье" data-productId="442613576" coords="611,429,611,413,627,392,643,363,660,321,670,277,676,242,679,212,676,203,673,208,666,234,656,249,640,258,631,265,627,275,630,285,636,305,626,316,617,324,607,337,598,346,572,351,539,350,515,346,487,344,480,354,479,366,479,383,482,393,487,400,487,412,487,430,558,429,582,430" shape="poly">
+	        </map>
+	      </div>
+	      <div id="info" class="col my-5">
+	      	<div class="ec-cart-widget my-4" data-layout="BIG_ICON_TITLE_SUBTOTAL"></div>
+	      </div>
+    	</div>
+    </div>
+    
+    <script type="text/javascript">
+      function apiLoaded() {
+				Ecwid.OnAPILoaded.add(function() {
+					console.log("Ecwid storefront JS API has loaded");
+					Ecwid.init();
+					Ecwid.Cart.clear();
+				});
+			};
+    </script>
+    <script data-cfasync="false" 
+    			  type="text/javascript" 
+    			  src="https://app.ecwid.com/script.js?6732144&data_platform=code&data_date=2022-02-10" 
+    			  charset="utf-8">
+    </script>
+    <script>
+      $("#map-tag area").click(function() {
+				if (!$(this).hasClass('selected')) {
+					if ($(this).hasClass('wheels')) {
+						var productId = {
+							id: Number($(this).attr("data-productId")),
+							quantity: 4,
+						}
+						$("#map-tag area.wheels").data('maphilight', {alwaysOn: true}).trigger('alwaysOn.maphilight');
+						$("#map-tag area.wheels").addClass('selected');
+						Ecwid.Cart.addProduct(productId);
+					} else {
+						var productId = Number($(this).attr("data-productId"))
+						$(this).data('maphilight', {alwaysOn: true}).trigger('alwaysOn.maphilight');
+						$(this).addClass('selected');
+						Ecwid.Cart.addProduct(productId);
+					}
+					$(`<p style="color: green;">Вы добавили деталь: ${$(this).attr("title")}</p>`).appendTo('#info');
+				} else {
+					alert('Вы уже добавили эту деталь в корзину!')
+				}
+				setTimeout(function() {
+					Ecwid.Cart.get(function(cart) {
+						if (cart.items.length === 5) {
+							$(".buggy").hide();
+							$('<h1 id="result">Вы собрали автомобиль!!!</h1>').appendTo('#content');
+						}
+					});
+				}, 1000);
+			});
+    </script>
+  </body>
+</html>
